@@ -1,10 +1,14 @@
 package fr.benjaminbrehier;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.json.simple.JSONArray;
@@ -19,7 +23,7 @@ public class Logic {
         
         
         //Lire le fichier d'entrée a_example.json
-        String fileName = "a_example";
+        String fileName = "b_lovely_landscapes";
         File file = new File("src/main/java/fr/benjaminbrehier/datasets_map/" + fileName + ".json");
         // Créer l'objet File Reader
         FileReader fr = new FileReader(file);
@@ -42,7 +46,6 @@ public class Logic {
                     photo.addTag((String) tag);
                 }
                 photos.add(photo);
-                System.out.println("\n");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -51,25 +54,25 @@ public class Logic {
         fr.close();
 
 
-        // Classer les photos par nombre de tags en commun
-        ArrayList<Photo> photosVerticales = new ArrayList<Photo>();
-        ArrayList<Photo> photosHorizontales = new ArrayList<Photo>();
-        for (Photo p : photos) {
-            if (p.isVertical()) {
-                photosVerticales.add(p);
-            } else {
-                photosHorizontales.add(p);
-            }
-        }
+        // // Classer les photos par nombre de tags en commun
+        // ArrayList<Photo> photosVerticales = new ArrayList<Photo>();
+        // ArrayList<Photo> photosHorizontales = new ArrayList<Photo>();
+        // for (Photo p : photos) {
+        //     if (p.isVertical()) {
+        //         photosVerticales.add(p);
+        //     } else {
+        //         photosHorizontales.add(p);
+        //     }
+        // }
 
-        photosVerticales.sort((p1, p2) -> p1.getNbCommonTags(p2) - p2.getNbCommonTags(p1));
-        photosHorizontales.sort((p1, p2) -> p1.getNbCommonTags(p2) - p2.getNbCommonTags(p1));
+        // photosVerticales.sort((p1, p2) -> p1.getNbCommonTags(p2) - p2.getNbCommonTags(p1));
+        // photosHorizontales.sort((p1, p2) -> p1.getNbCommonTags(p2) - p2.getNbCommonTags(p1));
 
-        photosVerticales.addAll(photosHorizontales);
-        photos = photosVerticales;
+        // photosVerticales.addAll(photosHorizontales);
+        // photos = photosVerticales;
 
-        photos.sort((p1, p2) -> p1.getNbCommonTags(p2) - p2.getNbCommonTags(p1));
-        photos.addAll(photosHorizontales);
+        // photos.sort((p1, p2) -> p1.getNbCommonTags(p2) - p2.getNbCommonTags(p1));
+        // photos.addAll(photosHorizontales);
 
         // Créer les diapos
         for (Photo p : photos) {
@@ -81,11 +84,12 @@ public class Logic {
                 int bestMatchScore = 0;
                 for (Photo p2 : photos) {
                     if (p2.isVertical() && !p2.isUsed() && p2.getId() != p.getId()) {
-                        int score = p.getNbCommonTags(p2);
-                        if (score > bestMatchScore) {
-                            bestMatch = p2;
-                            bestMatchScore = score;
-                        }
+                        bestMatch = p2;
+                        // int score = p.getNbCommonTags(p2);
+                        // if (score > bestMatchScore) {
+                        //     bestMatch = p2;
+                        //     bestMatchScore = score;
+                        // }
                     }
                 }
                 if (bestMatch != null) {
@@ -105,50 +109,98 @@ public class Logic {
         }
 
         // Créer le diaporama
-        List<Diapo> diaporama = createDiaporama(diapos);
+        createDiaporama(diapos);
 
 
         System.out.println("Fichier de sortie :");
-        System.out.println(fileName);
-        System.out.println(diapos.size());
-        for (Diapo d : diaporama) {
-            System.out.println(d.toString());
+
+        // Ecrire le fichier de sortie
+
+        String output = fileName + "\n";
+        output += diapos.size() + "\n";
+        for (Diapo d : diapos) {
+            output += d.toString() + "\n";
         }
+        
+        try {
+            FileWriter fw = new FileWriter("/Users/benjaminbrehier/Documents/Dev/scientific-day-2023-challenge-evaluator/outputs/"+fileName+".txt", false);
+            BufferedWriter bw = new BufferedWriter(fw);
+            // Enregistrer le score dans le fichier ainsi que la date et le nom
+            bw.write(output);
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        
+
+        // System.out.println(fileName);
+        // System.out.println(diapos.size());
+        // for (Diapo d : diapos) {
+        //     System.out.println(d.toString());
+        // }
         
     }
 
-    public static List<Diapo> createDiaporama(ArrayList<Diapo> diapos) {
-        List<Diapo> diaporama = new ArrayList<Diapo>();
-        for (Diapo d : diapos) {
-            if (d.isUsed()) {
-                continue;
-            }
+    public static void createDiaporama(ArrayList<Diapo> diapos) {
+        for (int i = 0; i < diapos.size(); i++) {
+            Diapo d = diapos.get(i);
+            // if (d.isUsed()) {
+            //     continue;
+            // }
             Diapo bestMatch = null;
             int bestMatchScore = 0;
             for (Diapo d2 : diapos) {
-                if (!d2.isUsed() && !d.equals(d2)) {
-                    int score = d.getNbCommonTags(d2);
-                    if (score > bestMatchScore) {
+                if (!d.equals(d2)) {
+                    if (d.getNbCommonTags(d2) > bestMatchScore) {
                         bestMatch = d2;
-                        bestMatchScore = score;
+                        bestMatchScore = d.getNbCommonTags(d2);
                     }
                 }
             }
-            if (bestMatch != null && diaporama.size() > 0 && diaporama.contains(bestMatch)) {
-                d.setUsed(true);
-                diaporama.add(diaporama.indexOf(bestMatch), d);
-            } else if (bestMatch != null) {
-                diaporama.add(d);
-                d.setUsed(true);
-                diaporama.add(bestMatch);
-                bestMatch.setUsed(true);
-                bestMatch.setUsed(true);
+            if (bestMatch != null) {
+                diapos.remove(d);
+                diapos.add(diapos.indexOf(bestMatch) + 1, d);
             } else {
                 System.out.println("No match");
-                diaporama.add(d);
-                d.setUsed(true);
+                diapos.add(d);
             }
         }
-        return diaporama;
+
+
+
+
+
+        // List<Diapo> diaporama = new ArrayList<Diapo>();
+        // for (Diapo d : diapos) {
+        //     if (d.isUsed()) {
+        //         continue;
+        //     }
+        //     Diapo bestMatch = null;
+        //     int bestMatchScore = 0;
+        //     for (Diapo d2 : diapos) {
+        //         if (!d2.isUsed() && !d.equals(d2)) {
+        //             if (d.getNbCommonTags(d2) > bestMatchScore) {
+        //                 bestMatch = d2;
+        //                 bestMatchScore = d.getNbCommonTags(d2);
+        //             }
+        //         }
+        //     }
+        //     if (bestMatch != null && diaporama.size() > 0 && diaporama.contains(bestMatch)) {
+        //         d.setUsed(true);
+        //         diaporama.add(diaporama.indexOf(bestMatch), d);
+        //     } else if (bestMatch != null) {
+        //         diaporama.add(d);
+        //         d.setUsed(true);
+        //         diaporama.add(bestMatch);
+        //         bestMatch.setUsed(true);
+        //         bestMatch.setUsed(true);
+        //     } else {
+        //         System.out.println("No match");
+        //         diaporama.add(d);
+        //         d.setUsed(true);
+        //     }
+        // }
+        // return diaporama;
     }
 }

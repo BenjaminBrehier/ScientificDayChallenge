@@ -42,11 +42,11 @@ public class Diapo {
             s += p.getId() + " ";
         }
 
-        s += " tags : ";
+        // s += " tags : ";
 
-        for (String tag : tags) {
-            s += tag + " ";
-        }
+        // for (String tag : tags) {
+        //     s += tag + " ";
+        // }
 
         // Trouver et Afficher les tags en communs entre les photos
         // if (photos.length != 1) {
