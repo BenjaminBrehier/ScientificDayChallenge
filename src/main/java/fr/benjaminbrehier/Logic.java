@@ -5,11 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,7 +19,7 @@ public class Logic {
         
         
         //Lire le fichier d'entrée a_example.json
-        String fileName = "b_lovely_landscapes";
+        String fileName = "e_shiny_selfies";
         File file = new File("src/main/java/fr/benjaminbrehier/datasets_map/" + fileName + ".json");
         // Créer l'objet File Reader
         FileReader fr = new FileReader(file);
@@ -81,15 +77,11 @@ public class Logic {
                     continue;
                 }
                 Photo bestMatch = null;
-                int bestMatchScore = 0;
                 for (Photo p2 : photos) {
                     if (p2.isVertical() && !p2.isUsed() && p2.getId() != p.getId()) {
-                        bestMatch = p2;
-                        // int score = p.getNbCommonTags(p2);
-                        // if (score > bestMatchScore) {
-                        //     bestMatch = p2;
-                        //     bestMatchScore = score;
-                        // }
+                        if (p.getNbCommonTags(p2) == 0) {
+                            bestMatch = p2;
+                        }
                     }
                 }
                 if (bestMatch != null) {
@@ -108,11 +100,8 @@ public class Logic {
             }
         }
 
-        // Créer le diaporama
-        createDiaporama(diapos);
-
-
-        System.out.println("Fichier de sortie :");
+        // Trier le diaporama
+        sortDiaporama(diapos);
 
         // Ecrire le fichier de sortie
 
@@ -130,31 +119,20 @@ public class Logic {
             bw.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        
-
-        // System.out.println(fileName);
-        // System.out.println(diapos.size());
-        // for (Diapo d : diapos) {
-        //     System.out.println(d.toString());
-        // }
-        
+        }        
     }
 
-    public static void createDiaporama(ArrayList<Diapo> diapos) {
+    public static void sortDiaporama(ArrayList<Diapo> diapos) {
         for (int i = 0; i < diapos.size(); i++) {
             Diapo d = diapos.get(i);
-            // if (d.isUsed()) {
-            //     continue;
-            // }
             Diapo bestMatch = null;
             int bestMatchScore = 0;
             for (Diapo d2 : diapos) {
                 if (!d.equals(d2)) {
-                    if (d.getNbCommonTags(d2) > bestMatchScore) {
+                    int score = d.getNbCommonTags(d2);
+                    if (score > bestMatchScore) {
                         bestMatch = d2;
-                        bestMatchScore = d.getNbCommonTags(d2);
+                        bestMatchScore = score;
                     }
                 }
             }
