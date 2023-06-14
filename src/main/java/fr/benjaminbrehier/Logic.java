@@ -19,7 +19,8 @@ public class Logic {
         
         
         //Lire le fichier d'entrée a_example.json
-        String fileName = "e_shiny_selfies";
+        String fileName = "a_example";
+        System.out.println("Lecture du fichier " + fileName + ".json");
         File file = new File("src/main/java/fr/benjaminbrehier/datasets_map/" + fileName + ".json");
         // Créer l'objet File Reader
         FileReader fr = new FileReader(file);
